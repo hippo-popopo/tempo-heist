@@ -306,7 +306,7 @@ onlineEstimateInput.addEventListener("keydown", event => {
   if (event.key === "Enter") onlineActionButton.click();
 });
 document.addEventListener("keydown", event => {
-  if (selectedMode !== "online" || event.code !== "Space" || event.repeat || document.activeElement === onlineEstimateInput) return;
+  if (selectedMode !== "online" || duelArena.classList.contains("hidden") || event.code !== "Space" || event.repeat || document.activeElement === onlineEstimateInput) return;
   event.preventDefault();
   if (!nextOnlineRoundButton.classList.contains("hidden")) nextOnlineRoundButton.click();
   else if (!onlineActionButton.disabled) onlineActionButton.click();

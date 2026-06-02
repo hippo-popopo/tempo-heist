@@ -182,6 +182,35 @@
           <div class="duel-round-result hidden" id="duelRoundResult"></div>
           <button class="secondary-button hidden" id="nextOnlineRoundButton" type="button">VERROU SUIVANT <b>→</b></button>
         </div>
+
+        <div class="duel-recap hidden" id="duelRecap">
+          <div class="recap-heading">
+            <div>
+              <p class="tiny-label">RAPPORT DE VERROU</p>
+              <h2 id="recapTitle">VERROU REMPORTÉ</h2>
+            </div>
+            <div class="recap-round">MANCHE <strong id="recapRound">01</strong> / 05</div>
+          </div>
+          <div class="recap-target">
+            <span>DURÉE RÉELLE</span>
+            <strong id="recapTarget">0,00 S</strong>
+            <small id="recapProtocol">PROTOCOLE</small>
+          </div>
+          <div class="recap-versus" id="recapVersus"></div>
+          <div class="recap-score" id="recapScore"></div>
+          <button class="secondary-button hidden" id="recapNextButton" type="button">VERROU SUIVANT <b>→</b></button>
+          <p class="online-copy recap-wait hidden" id="recapWait">En attente de l'hôte pour ouvrir le verrou suivant...</p>
+        </div>
+
+        <div class="duel-final hidden" id="duelFinal">
+          <p class="tiny-label">RAPPORT FINAL / CINQ VERROUS</p>
+          <h2 id="finalTitle">DUEL TERMINÉ</h2>
+          <p class="online-copy" id="finalCopy">Les deux agents ont terminé l'infiltration.</p>
+          <div class="final-score" id="finalScore"></div>
+          <div class="final-rounds" id="finalRounds"></div>
+          <button class="action-button hidden" id="rematchButton" type="button"><span class="button-icon">↻</span>PROPOSER UNE REVANCHE</button>
+          <p class="online-copy recap-wait hidden" id="rematchWait">En attente de l'hôte pour une nouvelle mission...</p>
+        </div>
       </div>
     </section>
 

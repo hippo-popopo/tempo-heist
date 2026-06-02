@@ -31,6 +31,22 @@ const onlineButtonText = document.getElementById("onlineButtonText");
 const onlineButtonIcon = document.getElementById("onlineButtonIcon");
 const duelRoundResult = document.getElementById("duelRoundResult");
 const nextOnlineRoundButton = document.getElementById("nextOnlineRoundButton");
+const duelRecap = document.getElementById("duelRecap");
+const recapTitle = document.getElementById("recapTitle");
+const recapRound = document.getElementById("recapRound");
+const recapTarget = document.getElementById("recapTarget");
+const recapProtocol = document.getElementById("recapProtocol");
+const recapVersus = document.getElementById("recapVersus");
+const recapScore = document.getElementById("recapScore");
+const recapNextButton = document.getElementById("recapNextButton");
+const recapWait = document.getElementById("recapWait");
+const duelFinal = document.getElementById("duelFinal");
+const finalTitle = document.getElementById("finalTitle");
+const finalCopy = document.getElementById("finalCopy");
+const finalScore = document.getElementById("finalScore");
+const finalRounds = document.getElementById("finalRounds");
+const rematchButton = document.getElementById("rematchButton");
+const rematchWait = document.getElementById("rematchWait");
 
 const databaseURL = (window.TEMPO_HEIST_FIREBASE?.databaseURL || "").replace(/\/$/, "");
 const playerId = sessionStorage.getItem("tempoHeistPlayer") || crypto.randomUUID();
@@ -67,6 +83,16 @@ function cleanName() {
   return (agentNameInput.value.trim() || "AGENT 07").slice(0, 14).toUpperCase();
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#039;"
+  })[character]);
+}
+
 function generateCode() {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   return Array.from({ length: 5 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join("");
@@ -89,6 +115,8 @@ function showOnlineView(view) {
   onlineLobby.classList.toggle("hidden", view !== "entry");
   roomLobby.classList.toggle("hidden", view !== "lobby");
   duelArena.classList.toggle("hidden", view !== "duel");
+  duelRecap.classList.toggle("hidden", view !== "recap");
+  duelFinal.classList.toggle("hidden", view !== "final");
 }
 
 function onlineRenderTime(value) {
@@ -174,17 +202,69 @@ function renderAnswers() {
   const opponentAnswer = answers.find(answer => answer.playerId !== playerId);
   const won = opponentAnswer && ownAnswer.error < opponentAnswer.error;
   const draw = opponentAnswer && ownAnswer.error === opponentAnswer.error;
+  if (opponentAnswer) {
+    renderRoundRecap(ownAnswer, opponentAnswer, won, draw);
+    return;
+  }
   onlineStatusLabel.textContent = opponentAnswer ? "RÉSULTATS DU VERROU" : "RÉPONSE ENVOYÉE";
   onlineConsoleCopy.textContent = opponentAnswer ? "Les deux réponses sont verrouillées." : "En attente de la réponse adverse...";
-  duelRoundResult.innerHTML = opponentAnswer
-    ? `<strong>${won ? "VERROU REMPORTÉ" : draw ? "ÉGALITÉ" : "VERROU PERDU"}</strong><br>
-       Toi : <b>${formatSeconds(ownAnswer.guessed)} S</b> · écart ${formatSeconds(ownAnswer.error)} S
-       &nbsp; / &nbsp; Adversaire : <b>${formatSeconds(opponentAnswer.guessed)} S</b> · écart ${formatSeconds(opponentAnswer.error)} S`
-    : `Ta réponse : <b>${formatSeconds(ownAnswer.guessed)} S</b>. Canal adverse en attente...`;
+  duelRoundResult.innerHTML = `Ta réponse : <b>${formatSeconds(ownAnswer.guessed)} S</b>. Canal adverse en attente...`;
   duelRoundResult.classList.remove("hidden");
   setOnlineButton("RÉPONSE VERROUILLÉE", "✓", true);
-  if (opponentAnswer && isHost) nextOnlineRoundButton.classList.remove("hidden");
-  if (opponentAnswer && !isHost) onlineConsoleCopy.textContent += " L'hôte ouvre le verrou suivant.";
+}
+
+function renderRoundRecap(ownAnswer, opponentAnswer, won, draw) {
+  const duelRound = roomData.rounds[roomData.currentRound];
+  const roundScores = scores();
+  const opponent = playersArray().find(([id]) => id !== playerId);
+  showOnlineView("recap");
+  recapTitle.textContent = draw ? "ÉGALITÉ" : won ? "VERROU REMPORTÉ" : "VERROU PERDU";
+  recapRound.textContent = String(roomData.currentRound + 1).padStart(2, "0");
+  recapTarget.textContent = `${formatSeconds(duelRound.target)} S`;
+  recapProtocol.textContent = duelRound.challenge === "estimate" ? "SIGNAL LUMINEUX" : "CHRONO INVISIBLE";
+  recapVersus.innerHTML = `
+    <div class="recap-player"><span>${escapeHtml(roomData.players[playerId]?.name || "TOI")}</span><strong>${formatSeconds(ownAnswer.guessed)} S</strong><small>ÉCART ${formatSeconds(ownAnswer.error)} S · +${ownAnswer.points} PTS</small></div>
+    <b>VS</b>
+    <div class="recap-player"><span>${escapeHtml(opponent?.[1]?.name || "ADVERSAIRE")}</span><strong>${formatSeconds(opponentAnswer.guessed)} S</strong><small>ÉCART ${formatSeconds(opponentAnswer.error)} S · +${opponentAnswer.points} PTS</small></div>`;
+  recapScore.innerHTML = `<span>SCORE CUMULÉ</span><strong>${roundScores[playerId] || 0} — ${opponent ? roundScores[opponent[0]] || 0 : 0}</strong>`;
+  recapNextButton.textContent = roomData.currentRound >= 4 ? "VOIR LE RAPPORT FINAL" : "VERROU SUIVANT →";
+  recapNextButton.classList.toggle("hidden", !isHost);
+  recapWait.classList.toggle("hidden", isHost);
+}
+
+function renderFinal() {
+  const players = playersArray();
+  const opponent = players.find(([id]) => id !== playerId);
+  const roundScores = scores();
+  const myScore = roundScores[playerId] || 0;
+  const opponentScore = opponent ? roundScores[opponent[0]] || 0 : 0;
+  const won = myScore > opponentScore;
+  const draw = myScore === opponentScore;
+  showOnlineView("final");
+  finalTitle.textContent = draw ? "DUEL À ÉGALITÉ" : won ? "MISSION REMPORTÉE" : "MISSION PERDUE";
+  finalCopy.textContent = draw ? "Deux agents parfaitement équilibrés." : won ? "Tu repars avec le diamant azur." : "Ton adversaire s'est emparé du diamant azur.";
+  finalScore.innerHTML = `
+    <div class="final-player ${won ? "winner" : ""}"><span>${escapeHtml(roomData.players[playerId]?.name || "TOI")}</span><strong>${myScore} PTS</strong><small>${roundWins(playerId)} VERROUS REMPORTÉS</small></div>
+    <b>VS</b>
+    <div class="final-player ${!draw && !won ? "winner" : ""}"><span>${escapeHtml(opponent?.[1]?.name || "ADVERSAIRE")}</span><strong>${opponentScore} PTS</strong><small>${opponent ? roundWins(opponent[0]) : 0} VERROUS REMPORTÉS</small></div>`;
+  finalRounds.innerHTML = roomData.rounds.map((duelRound, index) => {
+    const mine = roomData.players[playerId]?.answers?.[index];
+    const theirs = opponent?.[1]?.answers?.[index];
+    const mark = mine && theirs ? (mine.error === theirs.error ? "=" : mine.error < theirs.error ? "✓" : "×") : "·";
+    return `<div class="final-round"><b>#0${index + 1}</b><span>${mine ? formatSeconds(mine.error) : "--"} S</span><span>${theirs ? formatSeconds(theirs.error) : "--"} S</span><span>${mark}</span></div>`;
+  }).join("");
+  rematchButton.classList.toggle("hidden", !isHost);
+  rematchWait.classList.toggle("hidden", isHost);
+}
+
+function roundWins(id) {
+  const opponent = playersArray().find(([playerKey]) => playerKey !== id);
+  if (!opponent) return 0;
+  return roomData.rounds.reduce((wins, _, index) => {
+    const mine = roomData.players[id]?.answers?.[index];
+    const theirs = opponent[1]?.answers?.[index];
+    return wins + (mine && theirs && mine.error < theirs.error ? 1 : 0);
+  }, 0);
 }
 
 async function refreshRoom() {
@@ -195,6 +275,8 @@ async function refreshRoom() {
     if (roomData.status === "lobby") {
       showOnlineView("lobby");
       renderLobby();
+    } else if (roomData.status === "finished") {
+      renderFinal();
     } else {
       showOnlineView("duel");
       renderDuelRound();
@@ -306,9 +388,11 @@ onlineEstimateInput.addEventListener("keydown", event => {
   if (event.key === "Enter") onlineActionButton.click();
 });
 document.addEventListener("keydown", event => {
-  if (selectedMode !== "online" || duelArena.classList.contains("hidden") || event.code !== "Space" || event.repeat || document.activeElement === onlineEstimateInput) return;
+  if (selectedMode !== "online" || event.code !== "Space" || event.repeat || document.activeElement === onlineEstimateInput) return;
   event.preventDefault();
-  if (!nextOnlineRoundButton.classList.contains("hidden")) nextOnlineRoundButton.click();
+  if (!recapNextButton.classList.contains("hidden")) recapNextButton.click();
+  else if (!nextOnlineRoundButton.classList.contains("hidden")) nextOnlineRoundButton.click();
+  else if (duelArena.classList.contains("hidden")) return;
   else if (!onlineActionButton.disabled) onlineActionButton.click();
 });
 createRoomButton.addEventListener("click", createRoom);
@@ -318,15 +402,31 @@ copyCodeButton.addEventListener("click", async () => {
   await navigator.clipboard.writeText(roomCode);
   roomMessage.textContent = "Code copié. Envoie-le à ton adversaire.";
 });
-nextOnlineRoundButton.addEventListener("click", async () => {
+async function advanceOnlineRound() {
   if (!isHost) return;
   if (roomData.currentRound >= 4) {
     await request("", { method: "PATCH", body: JSON.stringify({ status: "finished" }) });
-    onlineConsoleCopy.textContent = "Duel terminé. Recharge le salon pour une revanche.";
-    nextOnlineRoundButton.classList.add("hidden");
+    refreshRoom();
     return;
   }
   await request("", { method: "PATCH", body: JSON.stringify({ currentRound: roomData.currentRound + 1 }) });
+  refreshRoom();
+}
+
+nextOnlineRoundButton.addEventListener("click", advanceOnlineRound);
+recapNextButton.addEventListener("click", advanceOnlineRound);
+rematchButton.addEventListener("click", async () => {
+  if (!isHost) return;
+  localRound = -1;
+  await request("", {
+    method: "PATCH",
+    body: JSON.stringify({
+      status: "playing",
+      currentRound: 0,
+      rounds: generateRounds(),
+      players: Object.fromEntries(playersArray().map(([id, player]) => [id, { name: player.name, answers: {} }]))
+    })
+  });
   refreshRoom();
 });
 

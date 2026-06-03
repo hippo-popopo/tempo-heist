@@ -117,6 +117,10 @@ function showOnlineView(view) {
   duelArena.classList.toggle("hidden", view !== "duel");
   duelRecap.classList.toggle("hidden", view !== "recap");
   duelFinal.classList.toggle("hidden", view !== "final");
+  if (view !== "recap") {
+    recapNextButton.classList.add("hidden");
+    recapWait.classList.add("hidden");
+  }
 }
 
 function onlineRenderTime(value) {
@@ -390,10 +394,9 @@ onlineEstimateInput.addEventListener("keydown", event => {
 document.addEventListener("keydown", event => {
   if (selectedMode !== "online" || event.code !== "Space" || event.repeat || document.activeElement === onlineEstimateInput) return;
   event.preventDefault();
-  if (!recapNextButton.classList.contains("hidden")) recapNextButton.click();
-  else if (!nextOnlineRoundButton.classList.contains("hidden")) nextOnlineRoundButton.click();
-  else if (duelArena.classList.contains("hidden")) return;
-  else if (!onlineActionButton.disabled) onlineActionButton.click();
+  if (!duelRecap.classList.contains("hidden") && !recapNextButton.classList.contains("hidden")) recapNextButton.click();
+  else if (!duelArena.classList.contains("hidden") && !nextOnlineRoundButton.classList.contains("hidden")) nextOnlineRoundButton.click();
+  else if (!duelArena.classList.contains("hidden") && !onlineActionButton.disabled) onlineActionButton.click();
 });
 createRoomButton.addEventListener("click", createRoom);
 joinRoomButton.addEventListener("click", joinRoom);

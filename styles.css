@@ -279,10 +279,11 @@ h1 em { color: var(--gold-bright); font-style: normal; }
 .battle-player-list span, .battle-ranking span { color: #c2d1cf; }
 .battle-player-list small, .battle-ranking small { color: #80999a; text-align: right; }
 .battle-arena { display: flex; min-height: 390px; flex-direction: column; align-items: center; justify-content: center; }
-.battle-scoreboard { display: grid; width: 100%; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.battle-scoreboard { display: grid; width: 100%; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .battle-scoreboard div { display: grid; gap: 4px; text-align: center; }
 .battle-scoreboard span { color: var(--cyan); font-size: 8px; letter-spacing: 1.4px; font-weight: 800; }
 .battle-scoreboard strong { color: var(--gold-bright); font-family: var(--font-display); font-size: 26px; }
+.battle-scoreboard strong em { font-style: normal; }
 .battle-arena .timer { font-size: 70px; }
 .battle-arena .timer i { font-size: 46px; }
 .battle-arena .timer small { font-size: 44px; }

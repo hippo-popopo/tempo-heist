@@ -15,6 +15,7 @@ const battlePlayerList = document.getElementById("battlePlayerList");
 const copyBattleCodeButton = document.getElementById("copyBattleCodeButton");
 const startBattleButton = document.getElementById("startBattleButton");
 const battleLobbyMessage = document.getElementById("battleLobbyMessage");
+const battleStage = document.getElementById("battleStage");
 const battleRound = document.getElementById("battleRound");
 const battleAlive = document.getElementById("battleAlive");
 const battleStatus = document.getElementById("battleStatus");
@@ -98,6 +99,22 @@ function ownBattlePlayer() {
   return battleRoomData?.players?.[battlePlayerId];
 }
 
+function currentBattleStage() {
+  return battleRoomData?.currentStage || 0;
+}
+
+function battleAnswerKey(stage = currentBattleStage(), round = battleRoomData?.currentRound || 0) {
+  return `${stage}-${round}`;
+}
+
+function battleStageAnswers(player, stage = currentBattleStage()) {
+  return Array.from({ length: 5 }, (_, round) => player.answers?.[battleAnswerKey(stage, round)]);
+}
+
+function battleStageError(player, stage = currentBattleStage()) {
+  return battleStageAnswers(player, stage).reduce((total, answer) => total + (answer?.error ?? 999), 0);
+}
+
 function showBattleView(view) {
   battleEntry.classList.toggle("hidden", view !== "entry");
   battleLobby.classList.toggle("hidden", view !== "lobby");
@@ -143,13 +160,16 @@ function renderBattleArena() {
   const roundData = battleRoomData.round;
   const player = ownBattlePlayer();
   const active = activeBattlePlayers();
-  const ownAnswer = player?.answers?.[battleRoomData.currentRound];
-  const answeredCount = active.filter(([, activePlayer]) => activePlayer.answers?.[battleRoomData.currentRound]).length;
+  const answerKey = battleAnswerKey();
+  const ownAnswer = player?.answers?.[answerKey];
+  const answeredCount = active.filter(([, activePlayer]) => activePlayer.answers?.[answerKey]).length;
 
   showBattleView("arena");
+  battleStage.textContent = String(currentBattleStage() + 1).padStart(2, "0");
   battleRound.textContent = String(battleRoomData.currentRound + 1).padStart(2, "0");
   battleAlive.textContent = active.length;
   battleStatus.textContent = player?.eliminated ? "ELIMINATED" : "ACTIVE";
+  resolveBattleButton.innerHTML = battleRoomData.currentRound >= 4 ? "RESOLVE STAGE <b>→</b>" : "NEXT ROUND <b>→</b>";
   resolveBattleButton.classList.toggle("hidden", !battleIsHost || answeredCount < active.length || active.length === 0);
 
   if (player?.eliminated) {
@@ -170,7 +190,7 @@ function renderBattleArena() {
       battleConsoleCopy.textContent = `${answeredCount} / ${active.length} active agents have answered.`;
       setBattleButton("WAITING FOR AGENTS", "✓", true);
       battleWaitingResult.classList.remove("hidden");
-      battleWaitingResult.innerHTML = `Your answer: <b>${formatSeconds(ownAnswer.guessed)} S</b> · error ${formatSeconds(ownAnswer.error)} S`;
+      battleWaitingResult.innerHTML = `Your answer: <b>${formatSeconds(ownAnswer.guessed)} S</b> · round error ${formatSeconds(ownAnswer.error)} S`;
     }
     return;
   }
@@ -210,10 +230,10 @@ function renderBattleRecap() {
   showBattleView("recap");
   battleRecapTitle.textContent = player?.eliminated ? "YOU WERE ELIMINATED" : "YOU SURVIVED";
   battleRank.textContent = ownRank ? `#${String(ownRank.rank).padStart(2, "0")}` : "SPECTATOR";
-  battleRankDetail.textContent = ownRank ? `${formatSeconds(ownRank.error)} S ERROR` : "NO ANSWER";
+  battleRankDetail.textContent = ownRank ? `${formatSeconds(ownRank.error)} S TOTAL ERROR / 5 ROUNDS` : "NO ANSWER";
   battleRecapStats.innerHTML = `
     <div><span>AGENTS SURVIVING</span><strong>${alive}</strong></div>
-    <div><span>ELIMINATED THIS ROUND</span><strong>${eliminatedCount}</strong></div>
+    <div><span>ELIMINATED THIS STAGE</span><strong>${eliminatedCount}</strong></div>
     <div><span>NEXT CUT</span><strong>~30%</strong></div>`;
   battleRanking.innerHTML = rankings.slice(0, 12).map(entry =>
     `<div class="${entry.eliminated ? "eliminated" : ""}"><b>#${String(entry.rank).padStart(2, "0")}</b><span>${escapeHtml(entry.name)}</span><small>${formatSeconds(entry.error)} S</small><em>${entry.eliminated ? "OUT" : "SAFE"}</em></div>`
@@ -225,7 +245,7 @@ function renderBattleRecap() {
 function finalBattlePlayers() {
   return battlePlayers().sort(([, a], [, b]) => {
     if (a.eliminated !== b.eliminated) return a.eliminated ? 1 : -1;
-    return (b.eliminatedRound ?? 999) - (a.eliminatedRound ?? 999);
+    return (b.eliminatedStage ?? 999) - (a.eliminatedStage ?? 999);
   });
 }
 
@@ -237,10 +257,10 @@ function renderBattleFinal() {
   battleFinalTitle.textContent = ownWon ? "YOU ARE THE LAST AGENT" : "LAST AGENT STANDING";
   battleFinalCopy.textContent = ownWon ? "The Azure Diamond is yours." : `${winner?.[1]?.name || "An agent"} claimed the Azure Diamond.`;
   battleWinner.innerHTML = winner
-    ? `<span>WINNER</span><strong>${escapeHtml(winner[1].name)}</strong><small>SURVIVED ${battleRoomData.currentRound + 1} ${battleRoomData.currentRound === 0 ? "ROUND" : "ROUNDS"}</small>`
+    ? `<span>WINNER</span><strong>${escapeHtml(winner[1].name)}</strong><small>SURVIVED ${currentBattleStage() + 1} ${currentBattleStage() === 0 ? "STAGE" : "STAGES"}</small>`
     : "<strong>NO WINNER</strong>";
   battleFinalRanking.innerHTML = players.slice(0, 20).map(([id, player], index) =>
-    `<div><b>#${String(index + 1).padStart(2, "0")}</b><span>${escapeHtml(player.name)}</span><small>${id === winner?.[0] ? "WINNER" : `OUT ROUND ${(player.eliminatedRound ?? 0) + 1}`}</small></div>`
+    `<div><b>#${String(index + 1).padStart(2, "0")}</b><span>${escapeHtml(player.name)}</span><small>${id === winner?.[0] ? "WINNER" : `OUT STAGE ${(player.eliminatedStage ?? 0) + 1}`}</small></div>`
   ).join("");
   battleRematchButton.classList.toggle("hidden", !battleIsHost);
   battleFinalWait.classList.toggle("hidden", battleIsHost);
@@ -281,6 +301,7 @@ async function createBattle() {
     const room = {
       hostId: battlePlayerId,
       status: "lobby",
+      currentStage: 0,
       currentRound: 0,
       eliminationRate: .3,
       createdAt: Date.now(),
@@ -320,7 +341,7 @@ async function launchBattle() {
   battleLocalRound = -1;
   await battleRequest("", {
     method: "PATCH",
-    body: JSON.stringify({ status: "playing", currentRound: 0, round: battleChallenge(), rankings: null })
+    body: JSON.stringify({ status: "playing", currentStage: 0, currentRound: 0, round: battleChallenge(), rankings: null })
   });
   refreshBattleRoom();
 }
@@ -356,7 +377,7 @@ function startBattleChallenge() {
 async function submitBattleAnswer(guessed) {
   const error = Math.abs(guessed - battleRoomData.round.target);
   battleLocalState = "submitted";
-  await battleRequest(`/players/${battlePlayerId}/answers/${battleRoomData.currentRound}`, {
+  await battleRequest(`/players/${battlePlayerId}/answers/${battleAnswerKey()}`, {
     method: "PUT",
     body: JSON.stringify({ guessed, error })
   });
@@ -365,12 +386,24 @@ async function submitBattleAnswer(guessed) {
 
 async function resolveBattleRound() {
   if (!battleIsHost) return;
+  if (battleRoomData.currentRound < 4) {
+    battleLocalRound = -1;
+    await battleRequest("", {
+      method: "PATCH",
+      body: JSON.stringify({
+        currentRound: battleRoomData.currentRound + 1,
+        round: battleChallenge()
+      })
+    });
+    refreshBattleRoom();
+    return;
+  }
+
   const active = activeBattlePlayers();
   const ranked = active.map(([id, player]) => ({
     id,
     name: player.name,
-    guessed: player.answers?.[battleRoomData.currentRound]?.guessed,
-    error: player.answers?.[battleRoomData.currentRound]?.error ?? 999
+    error: battleStageError(player)
   })).sort((a, b) => a.error - b.error);
   const eliminateCount = ranked.length <= 1 ? 0 : Math.min(ranked.length - 1, Math.max(1, Math.floor(ranked.length * (battleRoomData.eliminationRate || .3))));
   const cutoff = ranked.length - eliminateCount;
@@ -378,7 +411,7 @@ async function resolveBattleRound() {
   const playerUpdates = {};
   rankings.filter(entry => entry.eliminated).forEach(entry => {
     playerUpdates[`players/${entry.id}/eliminated`] = true;
-    playerUpdates[`players/${entry.id}/eliminatedRound`] = battleRoomData.currentRound;
+    playerUpdates[`players/${entry.id}/eliminatedStage`] = currentBattleStage();
   });
   await battleRequest("", {
     method: "PATCH",
@@ -400,7 +433,8 @@ async function nextBattleRound() {
     method: "PATCH",
     body: JSON.stringify({
       status: "playing",
-      currentRound: battleRoomData.currentRound + 1,
+      currentStage: currentBattleStage() + 1,
+      currentRound: 0,
       round: battleChallenge(),
       rankings: null
     })
@@ -442,7 +476,7 @@ battleRematchButton.addEventListener("click", async () => {
   const resetPlayers = Object.fromEntries(battlePlayers().map(([id, player]) => [id, { name: player.name, eliminated: false, answers: {} }]));
   await battleRequest("", {
     method: "PATCH",
-    body: JSON.stringify({ status: "lobby", currentRound: 0, round: null, rankings: null, players: resetPlayers })
+    body: JSON.stringify({ status: "lobby", currentStage: 0, currentRound: 0, round: null, rankings: null, players: resetPlayers })
   });
   refreshBattleRoom();
 });

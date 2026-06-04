@@ -223,7 +223,7 @@
             </div>
             <span class="online-badge">UP TO 100</span>
           </div>
-          <p class="online-copy">Survive mixed timing rounds. The least accurate agents are eliminated after every lock until only one remains.</p>
+          <p class="online-copy">Survive five-round stages. After each stage, the least accurate agents are eliminated until only one remains.</p>
           <label class="online-field">
             <span>YOUR AGENT NAME</span>
             <input id="battleNameInput" type="text" maxlength="14" autocomplete="nickname" placeholder="AGENT 07">
@@ -244,7 +244,7 @@
           <p class="online-copy">Share the code. The host can launch with 2 to 100 agents.</p>
           <div class="battle-lobby-stats">
             <div><span>CONNECTED AGENTS</span><strong id="battlePlayerCount">1</strong><small>/ 100</small></div>
-            <div><span>ELIMINATION RATE</span><strong>30%</strong><small>PER ROUND</small></div>
+            <div><span>ELIMINATION RATE</span><strong>30%</strong><small>PER 5-ROUND STAGE</small></div>
           </div>
           <div class="battle-player-list" id="battlePlayerList"></div>
           <div class="room-actions">
@@ -256,7 +256,8 @@
 
         <div class="battle-arena hidden" id="battleArena">
           <div class="battle-scoreboard">
-            <div><span>ROUND</span><strong id="battleRound">01</strong></div>
+            <div><span>STAGE</span><strong id="battleStage">01</strong></div>
+            <div><span>ROUND</span><strong><em id="battleRound">01</em> / 05</strong></div>
             <div><span>AGENTS ALIVE</span><strong id="battleAlive">100</strong></div>
             <div><span>YOUR STATUS</span><strong id="battleStatus">ACTIVE</strong></div>
           </div>
@@ -271,11 +272,11 @@
           <button class="action-button" id="battleActionButton" type="button"><span class="button-icon" id="battleButtonIcon">♛</span><span id="battleButtonText">WAIT...</span></button>
           <p class="shortcut">SPACE <span></span> TO ACTIVATE <b>·</b> ENTER TO CONFIRM</p>
           <div class="duel-round-result hidden" id="battleWaitingResult"></div>
-          <button class="secondary-button hidden" id="resolveBattleButton" type="button">RESOLVE ROUND <b>→</b></button>
+          <button class="secondary-button hidden" id="resolveBattleButton" type="button">NEXT ROUND <b>→</b></button>
         </div>
 
         <div class="battle-recap hidden" id="battleRecap">
-          <p class="tiny-label">ELIMINATION REPORT</p>
+          <p class="tiny-label">STAGE ELIMINATION REPORT</p>
           <h2 id="battleRecapTitle">YOU SURVIVED</h2>
           <div class="battle-rank-card">
             <span>YOUR RANK</span>
@@ -284,8 +285,8 @@
           </div>
           <div class="battle-recap-stats" id="battleRecapStats"></div>
           <div class="battle-ranking" id="battleRanking"></div>
-          <button class="secondary-button hidden" id="nextBattleRoundButton" type="button">NEXT ROUND <b>→</b></button>
-          <p class="online-copy recap-wait hidden" id="battleRecapWait">Waiting for the host to start the next round...</p>
+          <button class="secondary-button hidden" id="nextBattleRoundButton" type="button">NEXT STAGE <b>→</b></button>
+          <p class="online-copy recap-wait hidden" id="battleRecapWait">Waiting for the host to start the next stage...</p>
         </div>
 
         <div class="battle-final hidden" id="battleFinal">

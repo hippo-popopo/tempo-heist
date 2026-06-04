@@ -40,11 +40,11 @@ function randomTarget() {
 }
 
 function formatSeconds(value) {
-  return value.toFixed(2).replace(".", ",");
+  return value.toFixed(2);
 }
 
 function formatLoot(value) {
-  return `€ ${value.toLocaleString("fr-FR")}`;
+  return `€ ${value.toLocaleString("en-US")}`;
 }
 
 function renderTime(value) {
@@ -59,7 +59,7 @@ function renderHidden() {
 
 function updateStats() {
   roundDisplay.textContent = round.toString().padStart(2, "0");
-  streakDisplay.textContent = ` / SÉRIE ${streak.toString().padStart(2, "0")}`;
+  streakDisplay.textContent = ` / STREAK ${streak.toString().padStart(2, "0")}`;
   bestStreakDisplay.textContent = bestStreak.toString().padStart(2, "0");
   loot.textContent = formatLoot(totalLoot);
   sidebarLoot.textContent = formatLoot(totalLoot);
@@ -87,16 +87,16 @@ function newRound() {
   updateStats();
 
   if (challenge === "reproduce") {
-    statusLabel.textContent = "PROTOCOLE / REPRODUIRE";
+    statusLabel.textContent = "PROTOCOL / REPRODUCE";
     renderTime(target);
     timer.classList.add("target-time");
-    consoleCopy.textContent = "Mémorise la cible. Quand tu es prêt, lance le chrono invisible et arrête-le au moment exact.";
-    setButton("LANCER LE CHRONO INVISIBLE", "⌖");
+    consoleCopy.textContent = "Memorize the target. When ready, start the invisible clock and stop it at the exact moment.";
+    setButton("START INVISIBLE CLOCK", "⌖");
   } else {
-    statusLabel.textContent = "PROTOCOLE / ESTIMER";
+    statusLabel.textContent = "PROTOCOL / ESTIMATE";
     renderHidden();
-    consoleCopy.textContent = "Quand tu es prêt, active le signal. Observe sa durée puis saisis ton estimation.";
-    setButton("ACTIVER LE SIGNAL", "✦");
+    consoleCopy.textContent = "When ready, activate the signal. Observe its duration, then enter your estimate.";
+    setButton("ACTIVATE SIGNAL", "✦");
   }
 }
 
@@ -104,9 +104,9 @@ function startReproduction() {
   state = "reproducing";
   startedAt = performance.now();
   renderHidden();
-  statusLabel.textContent = "CHRONO INVISIBLE / EN COURS";
-  consoleCopy.textContent = "Coupe le verrou lorsque tu penses avoir atteint la cible.";
-  setButton("COUPER LE VERROU", "✦", true);
+  statusLabel.textContent = "INVISIBLE CLOCK / RUNNING";
+  consoleCopy.textContent = "Cut the lock when you think you have reached the target.";
+  setButton("CUT THE LOCK", "✦", true);
 }
 
 function finishReproduction() {
@@ -117,9 +117,9 @@ function finishReproduction() {
 function startSignal() {
   state = "signal";
   signalLight.classList.add("on");
-  statusLabel.textContent = "SIGNAL LUMINEUX / OBSERVE";
-  consoleCopy.textContent = "La lumière s'éteindra seule. Ressens sa durée.";
-  setButton("SIGNAL EN COURS", "✦", true);
+  statusLabel.textContent = "LIGHT SIGNAL / OBSERVE";
+  consoleCopy.textContent = "The light will turn off by itself. Feel its duration.";
+  setButton("SIGNAL RUNNING", "✦", true);
   actionButton.disabled = true;
   signalTimeout = setTimeout(() => {
     state = "estimating";
@@ -127,9 +127,9 @@ function startSignal() {
     actionButton.disabled = false;
     estimateBox.classList.remove("hidden");
     estimateInput.focus();
-    statusLabel.textContent = "SIGNAL ÉTEINT / À TOI";
-    consoleCopy.textContent = "Combien de temps la lumière est-elle restée allumée ?";
-    setButton("VALIDER MON ESTIMATION", "✓");
+    statusLabel.textContent = "SIGNAL OFF / YOUR TURN";
+    consoleCopy.textContent = "How long was the light on?";
+    setButton("CONFIRM MY ESTIMATE", "✓");
   }, target * 1000);
 }
 
@@ -146,10 +146,10 @@ function submitEstimate() {
 }
 
 function grade(error) {
-  if (error <= .1) return { title: "PARFAIT", gain: 1000, precision: 100 };
-  if (error <= .25) return { title: "PROPRE", gain: 600, precision: 94 };
-  if (error <= .5) return { title: "RISQUÉ", gain: 250, precision: 82 };
-  return { title: "ALERTE", gain: 0, precision: Math.max(0, Math.round(75 - error * 12)) };
+  if (error <= .1) return { title: "PERFECT", gain: 1000, precision: 100 };
+  if (error <= .25) return { title: "CLEAN", gain: 600, precision: 94 };
+  if (error <= .5) return { title: "RISKY", gain: 250, precision: 82 };
+  return { title: "ALERT", gain: 0, precision: Math.max(0, Math.round(75 - error * 12)) };
 }
 
 function completeRound(guessed) {
@@ -169,14 +169,14 @@ function completeRound(guessed) {
     streak = 0;
   }
 
-  resultEyebrow.textContent = alerts >= 3 ? "MISSION TERMINÉE" : "VERROU ANALYSÉ";
-  resultTitle.textContent = alerts >= 3 ? "INFILTRATION COMPROMISE" : verdict.title;
+  resultEyebrow.textContent = alerts >= 3 ? "MISSION COMPLETE" : "LOCK ANALYZED";
+  resultTitle.textContent = alerts >= 3 ? "INFILTRATION COMPROMISED" : verdict.title;
   precision.textContent = `${verdict.precision}%`;
   resultGrid.innerHTML = `
-    <div class="result-item accent"><span>DURÉE RÉELLE</span><strong>${formatSeconds(target)} S</strong><b>${challenge === "estimate" ? "SIGNAL LUMINEUX" : "CIBLE AFFICHÉE"}</b></div>
-    <div class="result-item"><span>TA RÉPONSE</span><strong>${formatSeconds(guessed)} S</strong><b>${challenge === "estimate" ? "ESTIMATION" : "ARRÊT À L'AVEUGLE"}</b></div>
-    <div class="result-item ${error > .5 ? "danger" : ""}"><span>ÉCART</span><strong>${delta >= 0 ? "+" : ""}${formatSeconds(delta)} S</strong><b class="${error > .5 ? "off" : ""}">${verdict.title} · +${verdict.gain} €</b></div>`;
-  nextButton.innerHTML = alerts >= 3 ? "RECOMMENCER <b>↻</b>" : "VERROU SUIVANT <b>→</b>";
+    <div class="result-item accent"><span>ACTUAL TIME</span><strong>${formatSeconds(target)} S</strong><b>${challenge === "estimate" ? "LIGHT SIGNAL" : "DISPLAYED TARGET"}</b></div>
+    <div class="result-item"><span>YOUR ANSWER</span><strong>${formatSeconds(guessed)} S</strong><b>${challenge === "estimate" ? "ESTIMATE" : "BLIND STOP"}</b></div>
+    <div class="result-item ${error > .5 ? "danger" : ""}"><span>ERROR</span><strong>${delta >= 0 ? "+" : ""}${formatSeconds(delta)} S</strong><b class="${error > .5 ? "off" : ""}">${verdict.title} · +${verdict.gain} €</b></div>`;
+  nextButton.innerHTML = alerts >= 3 ? "RESTART <b>↻</b>" : "NEXT LOCK <b>→</b>";
   consolePanel.classList.add("hidden");
   resultPanel.classList.remove("hidden");
   updateStats();
@@ -206,17 +206,24 @@ modeButtons.forEach(button => button.addEventListener("click", () => {
   selectedMode = button.dataset.mode;
   modeButtons.forEach(candidate => candidate.classList.toggle("active", candidate === button));
   if (selectedMode === "online") {
+    window.leaveBattleMode?.();
     window.enterOnlineMode?.();
     return;
   }
+  if (selectedMode === "battle") {
+    window.leaveOnlineMode?.();
+    window.enterBattleMode?.();
+    return;
+  }
   window.leaveOnlineMode?.();
+  window.leaveBattleMode?.();
   newRound();
 }));
 estimateInput.addEventListener("keydown", event => {
   if (event.key === "Enter") submitEstimate();
 });
 document.addEventListener("keydown", event => {
-  if (selectedMode === "online" || event.code !== "Space" || event.repeat || document.activeElement === estimateInput) return;
+  if (selectedMode === "online" || selectedMode === "battle" || event.code !== "Space" || event.repeat || document.activeElement === estimateInput) return;
   event.preventDefault();
   if (state === "result") nextRound();
   else actionButton.click();

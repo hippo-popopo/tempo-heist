@@ -1,6 +1,6 @@
-# Tempo Heist 1V1 - Firebase setup
+# Tempo Heist online modes - Firebase setup
 
-The solo game works without Firebase. Firebase is only required for the `1V1 EN LIGNE` tab.
+The solo game works without Firebase. Firebase is required for the `ONLINE 1V1` and `BATTLE ROYALE` tabs.
 
 ## Free setup
 
@@ -25,6 +25,10 @@ These rules allow anonymous room access. They are suitable for a shared prototyp
   "rules": {
     "tempo-heist": {
       "rooms": {
+        ".read": true,
+        ".write": true
+      },
+      "battleRooms": {
         ".read": true,
         ".write": true
       }

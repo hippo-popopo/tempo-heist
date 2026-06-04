@@ -70,12 +70,12 @@ function roomUrl(path = "") {
 }
 
 async function request(path = "", options = {}) {
-  if (!firebaseReady()) throw new Error("Ajoute l'URL Firebase dans firebase-config.js.");
+  if (!firebaseReady()) throw new Error("Add the Firebase URL to firebase-config.js.");
   const response = await fetch(roomUrl(path), {
     headers: { "Content-Type": "application/json" },
     ...options
   });
-  if (!response.ok) throw new Error(`Firebase a répondu ${response.status}. Vérifie les règles de la base.`);
+  if (!response.ok) throw new Error(`Firebase returned ${response.status}. Check the database rules.`);
   return response.json();
 }
 
@@ -155,19 +155,19 @@ function renderLobby() {
   const guest = players.find(([id]) => id !== roomData.hostId)?.[1];
   roomCodeDisplay.textContent = roomCode;
   hostName.textContent = host?.name || "...";
-  guestName.textContent = guest?.name || "EN ATTENTE";
-  guestStatus.textContent = guest ? "CONNECTÉ" : "CONNEXION...";
+  guestName.textContent = guest?.name || "WAITING";
+  guestStatus.textContent = guest ? "CONNECTED" : "CONNECTING...";
   startDuelButton.disabled = !isHost || !guest;
   startDuelButton.classList.toggle("hidden", !isHost);
-  roomMessage.textContent = guest ? "Deux agents connectés. Le coffre est prêt." : "En attente du second agent...";
+  roomMessage.textContent = guest ? "Two agents connected. The vault is ready." : "Waiting for the second agent...";
 }
 
 function renderDuelRound() {
   const duelRound = roomData.rounds[roomData.currentRound];
   const roundScores = scores();
   const opponent = playersArray().find(([id]) => id !== playerId);
-  myOnlineName.textContent = roomData.players[playerId]?.name || "TOI";
-  opponentOnlineName.textContent = opponent?.[1]?.name || "ADVERSAIRE";
+  myOnlineName.textContent = roomData.players[playerId]?.name || "YOU";
+  opponentOnlineName.textContent = opponent?.[1]?.name || "OPPONENT";
   myOnlineScore.textContent = roundScores[playerId] || 0;
   opponentOnlineScore.textContent = opponent ? roundScores[opponent[0]] || 0 : 0;
   onlineRound.textContent = String(roomData.currentRound + 1).padStart(2, "0");
@@ -187,15 +187,15 @@ function renderDuelRound() {
   nextOnlineRoundButton.classList.add("hidden");
 
   if (duelRound.challenge === "reproduce") {
-    onlineStatusLabel.textContent = "DUEL / REPRODUIRE";
+    onlineStatusLabel.textContent = "DUEL / REPRODUCE";
     onlineRenderTime(duelRound.target);
-    onlineConsoleCopy.textContent = "Mémorise cette cible. Lance ton chrono invisible lorsque tu es prêt.";
-    setOnlineButton("LANCER MON CHRONO", "⌖");
+    onlineConsoleCopy.textContent = "Memorize this target. Start your invisible clock when ready.";
+    setOnlineButton("START MY CLOCK", "⌖");
   } else {
-    onlineStatusLabel.textContent = "DUEL / ESTIMER";
+    onlineStatusLabel.textContent = "DUEL / ESTIMATE";
     onlineRenderHidden();
-    onlineConsoleCopy.textContent = "Active le signal lorsque tu es prêt. Ton adversaire joue de son côté.";
-    setOnlineButton("ACTIVER MON SIGNAL", "✦");
+    onlineConsoleCopy.textContent = "Activate the signal when ready. Your opponent plays on their side.";
+    setOnlineButton("ACTIVATE MY SIGNAL", "✦");
   }
 }
 
@@ -210,11 +210,11 @@ function renderAnswers() {
     renderRoundRecap(ownAnswer, opponentAnswer, won, draw);
     return;
   }
-  onlineStatusLabel.textContent = opponentAnswer ? "RÉSULTATS DU VERROU" : "RÉPONSE ENVOYÉE";
-  onlineConsoleCopy.textContent = opponentAnswer ? "Les deux réponses sont verrouillées." : "En attente de la réponse adverse...";
-  duelRoundResult.innerHTML = `Ta réponse : <b>${formatSeconds(ownAnswer.guessed)} S</b>. Canal adverse en attente...`;
+  onlineStatusLabel.textContent = opponentAnswer ? "LOCK RESULTS" : "ANSWER SUBMITTED";
+  onlineConsoleCopy.textContent = opponentAnswer ? "Both answers are locked." : "Waiting for the opponent's answer...";
+  duelRoundResult.innerHTML = `Your answer: <b>${formatSeconds(ownAnswer.guessed)} S</b>. Waiting for the opponent...`;
   duelRoundResult.classList.remove("hidden");
-  setOnlineButton("RÉPONSE VERROUILLÉE", "✓", true);
+  setOnlineButton("ANSWER LOCKED", "✓", true);
 }
 
 function renderRoundRecap(ownAnswer, opponentAnswer, won, draw) {
@@ -222,16 +222,16 @@ function renderRoundRecap(ownAnswer, opponentAnswer, won, draw) {
   const roundScores = scores();
   const opponent = playersArray().find(([id]) => id !== playerId);
   showOnlineView("recap");
-  recapTitle.textContent = draw ? "ÉGALITÉ" : won ? "VERROU REMPORTÉ" : "VERROU PERDU";
+  recapTitle.textContent = draw ? "DRAW" : won ? "LOCK WON" : "LOCK LOST";
   recapRound.textContent = String(roomData.currentRound + 1).padStart(2, "0");
   recapTarget.textContent = `${formatSeconds(duelRound.target)} S`;
-  recapProtocol.textContent = duelRound.challenge === "estimate" ? "SIGNAL LUMINEUX" : "CHRONO INVISIBLE";
+  recapProtocol.textContent = duelRound.challenge === "estimate" ? "LIGHT SIGNAL" : "INVISIBLE CLOCK";
   recapVersus.innerHTML = `
-    <div class="recap-player"><span>${escapeHtml(roomData.players[playerId]?.name || "TOI")}</span><strong>${formatSeconds(ownAnswer.guessed)} S</strong><small>ÉCART ${formatSeconds(ownAnswer.error)} S · +${ownAnswer.points} PTS</small></div>
+    <div class="recap-player"><span>${escapeHtml(roomData.players[playerId]?.name || "YOU")}</span><strong>${formatSeconds(ownAnswer.guessed)} S</strong><small>ERROR ${formatSeconds(ownAnswer.error)} S · +${ownAnswer.points} PTS</small></div>
     <b>VS</b>
-    <div class="recap-player"><span>${escapeHtml(opponent?.[1]?.name || "ADVERSAIRE")}</span><strong>${formatSeconds(opponentAnswer.guessed)} S</strong><small>ÉCART ${formatSeconds(opponentAnswer.error)} S · +${opponentAnswer.points} PTS</small></div>`;
-  recapScore.innerHTML = `<span>SCORE CUMULÉ</span><strong>${roundScores[playerId] || 0} — ${opponent ? roundScores[opponent[0]] || 0 : 0}</strong>`;
-  recapNextButton.textContent = roomData.currentRound >= 4 ? "VOIR LE RAPPORT FINAL" : "VERROU SUIVANT →";
+    <div class="recap-player"><span>${escapeHtml(opponent?.[1]?.name || "OPPONENT")}</span><strong>${formatSeconds(opponentAnswer.guessed)} S</strong><small>ERROR ${formatSeconds(opponentAnswer.error)} S · +${opponentAnswer.points} PTS</small></div>`;
+  recapScore.innerHTML = `<span>CUMULATIVE SCORE</span><strong>${roundScores[playerId] || 0} — ${opponent ? roundScores[opponent[0]] || 0 : 0}</strong>`;
+  recapNextButton.textContent = roomData.currentRound >= 4 ? "VIEW FINAL REPORT" : "NEXT LOCK →";
   recapNextButton.classList.toggle("hidden", !isHost);
   recapWait.classList.toggle("hidden", isHost);
 }
@@ -245,12 +245,12 @@ function renderFinal() {
   const won = myScore > opponentScore;
   const draw = myScore === opponentScore;
   showOnlineView("final");
-  finalTitle.textContent = draw ? "DUEL À ÉGALITÉ" : won ? "MISSION REMPORTÉE" : "MISSION PERDUE";
-  finalCopy.textContent = draw ? "Deux agents parfaitement équilibrés." : won ? "Tu repars avec le diamant azur." : "Ton adversaire s'est emparé du diamant azur.";
+  finalTitle.textContent = draw ? "DUEL DRAW" : won ? "MISSION WON" : "MISSION LOST";
+  finalCopy.textContent = draw ? "Two perfectly matched agents." : won ? "You leave with the Azure Diamond." : "Your opponent has taken the Azure Diamond.";
   finalScore.innerHTML = `
-    <div class="final-player ${won ? "winner" : ""}"><span>${escapeHtml(roomData.players[playerId]?.name || "TOI")}</span><strong>${myScore} PTS</strong><small>${roundWins(playerId)} VERROUS REMPORTÉS</small></div>
+    <div class="final-player ${won ? "winner" : ""}"><span>${escapeHtml(roomData.players[playerId]?.name || "YOU")}</span><strong>${myScore} PTS</strong><small>${roundWins(playerId)} LOCKS WON</small></div>
     <b>VS</b>
-    <div class="final-player ${!draw && !won ? "winner" : ""}"><span>${escapeHtml(opponent?.[1]?.name || "ADVERSAIRE")}</span><strong>${opponentScore} PTS</strong><small>${opponent ? roundWins(opponent[0]) : 0} VERROUS REMPORTÉS</small></div>`;
+    <div class="final-player ${!draw && !won ? "winner" : ""}"><span>${escapeHtml(opponent?.[1]?.name || "OPPONENT")}</span><strong>${opponentScore} PTS</strong><small>${opponent ? roundWins(opponent[0]) : 0} LOCKS WON</small></div>`;
   finalRounds.innerHTML = roomData.rounds.map((duelRound, index) => {
     const mine = roomData.players[playerId]?.answers?.[index];
     const theirs = opponent?.[1]?.answers?.[index];
@@ -274,7 +274,7 @@ function roundWins(id) {
 async function refreshRoom() {
   try {
     const data = await request();
-    if (!data) throw new Error("Ce salon n'existe plus.");
+    if (!data) throw new Error("This room no longer exists.");
     roomData = data;
     if (roomData.status === "lobby") {
       showOnlineView("lobby");
@@ -320,11 +320,11 @@ async function joinRoom() {
   try {
     onlineMessage.textContent = "";
     roomCode = roomCodeInput.value.trim().toUpperCase();
-    if (roomCode.length !== 5) throw new Error("Entre un code de salon à cinq caractères.");
+    if (roomCode.length !== 5) throw new Error("Enter a five-character room code.");
     const existing = await request();
-    if (!existing) throw new Error("Salon introuvable.");
-    if (existing.status !== "lobby") throw new Error("Ce duel a déjà commencé.");
-    if (Object.keys(existing.players || {}).length >= 2) throw new Error("Ce salon est déjà complet.");
+    if (!existing) throw new Error("Room not found.");
+    if (existing.status !== "lobby") throw new Error("This duel has already started.");
+    if (Object.keys(existing.players || {}).length >= 2) throw new Error("This room is already full.");
     isHost = false;
     await request(`/players/${playerId}`, { method: "PUT", body: JSON.stringify({ name: cleanName(), answers: {} }) });
     startPolling();
@@ -345,25 +345,25 @@ function startOnlineChallenge() {
     localState = "reproducing";
     localStartedAt = performance.now();
     onlineRenderHidden();
-    onlineStatusLabel.textContent = "CHRONO INVISIBLE / EN COURS";
-    onlineConsoleCopy.textContent = "Coupe ton verrou au moment exact.";
-    setOnlineButton("COUPER MON VERROU", "✦");
+    onlineStatusLabel.textContent = "INVISIBLE CLOCK / RUNNING";
+    onlineConsoleCopy.textContent = "Cut your lock at the exact moment.";
+    setOnlineButton("CUT MY LOCK", "✦");
     return;
   }
 
   localState = "signal";
   onlineSignalLight.classList.add("on");
-  onlineStatusLabel.textContent = "SIGNAL LUMINEUX / OBSERVE";
-  onlineConsoleCopy.textContent = "La lumière s'éteindra seule. Ressens sa durée.";
-  setOnlineButton("SIGNAL EN COURS", "✦", true);
+  onlineStatusLabel.textContent = "LIGHT SIGNAL / OBSERVE";
+  onlineConsoleCopy.textContent = "The light will turn off by itself. Feel its duration.";
+  setOnlineButton("SIGNAL RUNNING", "✦", true);
   localSignalTimeout = setTimeout(() => {
     localState = "estimating";
     onlineSignalLight.classList.remove("on");
     onlineEstimateBox.classList.remove("hidden");
     onlineEstimateInput.focus();
-    onlineStatusLabel.textContent = "SIGNAL ÉTEINT / À TOI";
-    onlineConsoleCopy.textContent = "Combien de temps la lumière est-elle restée allumée ?";
-    setOnlineButton("VALIDER MON ESTIMATION", "✓");
+    onlineStatusLabel.textContent = "SIGNAL OFF / YOUR TURN";
+    onlineConsoleCopy.textContent = "How long was the light on?";
+    setOnlineButton("CONFIRM MY ESTIMATE", "✓");
   }, duelRound.target * 1000);
 }
 
@@ -403,7 +403,7 @@ joinRoomButton.addEventListener("click", joinRoom);
 startDuelButton.addEventListener("click", launchDuel);
 copyCodeButton.addEventListener("click", async () => {
   await navigator.clipboard.writeText(roomCode);
-  roomMessage.textContent = "Code copié. Envoie-le à ton adversaire.";
+  roomMessage.textContent = "Code copied. Send it to your opponent.";
 });
 async function advanceOnlineRound() {
   if (!isHost) return;
@@ -441,6 +441,7 @@ window.enterOnlineMode = () => {
   createRoomButton.disabled = !firebaseReady();
   joinRoomButton.disabled = !firebaseReady();
   if (!roomCode) showOnlineView("entry");
+  else startPolling();
 };
 
 window.leaveOnlineMode = () => {

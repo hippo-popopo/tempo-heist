@@ -167,7 +167,7 @@ h1 em { color: var(--gold-bright); font-style: normal; }
 .secondary-button b { padding-left: 8px; font-size: 16px; }
 .hidden { display: none !important; }
 
-.mode-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin-bottom: 19px; padding: 4px; }
+.mode-picker { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin-bottom: 19px; padding: 4px; }
 .mode-button { display: grid; grid-template-columns: 22px 1fr; grid-template-rows: auto auto; column-gap: 8px; padding: 10px 12px; color: #7f999a; border: 1px solid transparent; background: rgba(4, 15, 21, .46); text-align: left; transition: .2s ease; }
 .mode-button b { grid-row: 1 / 3; align-self: center; color: var(--gold); font-size: 17px; }
 .mode-button span { color: #bed0ce; font-size: 9px; letter-spacing: 1.5px; font-weight: 800; }
@@ -192,6 +192,7 @@ h1 em { color: var(--gold-bright); font-style: normal; }
 .result-item.accent strong { color: var(--gold-bright); }
 .result-item.danger strong, .result-item b.off { color: var(--red); }
 .online-mode b { color: var(--cyan); }
+.battle-mode b { color: var(--red); }
 .online-panel { min-height: 420px; padding: 25px; }
 .online-heading, .room-actions, .duel-scoreboard { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
 .online-heading h2, .room-lobby h2 { color: var(--gold-bright); font-size: 31px; }
@@ -262,6 +263,42 @@ h1 em { color: var(--gold-bright); font-style: normal; }
 .final-round { display: grid; grid-template-columns: 50px 1fr 1fr 54px; gap: 6px; align-items: center; padding: 8px 10px; color: #94adad; border: 1px solid rgba(139,202,205,.12); background: rgba(4,21,27,.44); font-size: 9px; text-align: left; }
 .final-round b { color: var(--cyan); }
 .final-round span:last-child { color: var(--gold-bright); text-align: right; }
+.battle-panel { min-height: 420px; padding: 25px; }
+.battle-lobby { text-align: center; }
+.battle-lobby h2 { margin-top: 8px; color: var(--gold-bright); font-size: 38px; }
+.battle-lobby h2 strong { color: var(--cyan); letter-spacing: 7px; }
+.battle-lobby .online-copy { margin: 8px auto 17px; }
+.battle-lobby-stats, .battle-recap-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; margin: 15px 0; }
+.battle-lobby-stats div, .battle-recap-stats div { display: grid; gap: 4px; padding: 12px; border: 1px solid var(--line); background: rgba(4,21,27,.62); }
+.battle-lobby-stats span, .battle-recap-stats span, .battle-rank-card span, .battle-winner span { color: var(--cyan); font-size: 8px; letter-spacing: 1.5px; font-weight: 800; }
+.battle-lobby-stats strong, .battle-recap-stats strong { color: var(--gold-bright); font-family: var(--font-display); font-size: 26px; }
+.battle-lobby-stats small { color: #80999a; font-size: 8px; letter-spacing: 1px; }
+.battle-player-list, .battle-ranking { display: grid; gap: 4px; max-height: 190px; margin: 12px 0 17px; overflow-y: auto; text-align: left; }
+.battle-player-list div, .battle-ranking div { display: grid; grid-template-columns: 38px 1fr 70px; gap: 7px; align-items: center; padding: 7px 9px; border: 1px solid rgba(139,202,205,.12); background: rgba(4,21,27,.44); font-size: 9px; }
+.battle-player-list b, .battle-ranking b { color: var(--cyan); }
+.battle-player-list span, .battle-ranking span { color: #c2d1cf; }
+.battle-player-list small, .battle-ranking small { color: #80999a; text-align: right; }
+.battle-arena { display: flex; min-height: 390px; flex-direction: column; align-items: center; justify-content: center; }
+.battle-scoreboard { display: grid; width: 100%; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.battle-scoreboard div { display: grid; gap: 4px; text-align: center; }
+.battle-scoreboard span { color: var(--cyan); font-size: 8px; letter-spacing: 1.4px; font-weight: 800; }
+.battle-scoreboard strong { color: var(--gold-bright); font-family: var(--font-display); font-size: 26px; }
+.battle-arena .timer { font-size: 70px; }
+.battle-arena .timer i { font-size: 46px; }
+.battle-arena .timer small { font-size: 44px; }
+#resolveBattleButton { margin-top: 10px; border-color: var(--red); color: #ffd1ca; }
+.battle-recap, .battle-final { min-height: 390px; text-align: center; animation: rise .35s ease; }
+.battle-recap h2, .battle-final h2 { color: var(--gold-bright); font-size: 35px; }
+.battle-rank-card { display: grid; justify-items: center; gap: 4px; margin: 14px auto; padding: 13px; border: 1px solid rgba(240,207,135,.38); background: rgba(38,29,16,.28); }
+.battle-rank-card strong { color: var(--gold-bright); font-family: var(--font-display); font-size: 38px; }
+.battle-rank-card small, .battle-winner small { color: #8ca6a6; font-size: 9px; letter-spacing: 1.1px; }
+.battle-recap-stats { grid-template-columns: repeat(3, 1fr); }
+.battle-ranking div { grid-template-columns: 42px 1fr 65px 45px; }
+.battle-ranking div.eliminated { opacity: .54; border-color: rgba(239,96,77,.2); }
+.battle-ranking em { color: var(--gold-bright); font-size: 8px; font-style: normal; text-align: right; }
+.battle-ranking div.eliminated em { color: var(--red); }
+.battle-winner { display: grid; justify-items: center; gap: 5px; margin: 16px 0; padding: 18px; border: 1px solid rgba(240,207,135,.5); background: rgba(38,29,16,.3); }
+.battle-winner strong { color: var(--gold-bright); font-family: var(--font-display); font-size: 36px; letter-spacing: 1px; }
 
 footer { display: flex; height: 46px; align-items: center; justify-content: space-between; padding: 0 34px; color: #597779; border-top: 1px solid rgba(139,202,205,.12); background: rgba(2,9,13,.72); font-size: 8px; letter-spacing: 1.5px; }
 footer i { display: inline-block; width: 6px; height: 6px; margin-right: 7px; border-radius: 50%; background: var(--cyan); }
@@ -293,12 +330,16 @@ footer b { color: var(--gold); }
   .mode-picker { grid-template-columns: 1fr; }
   .mode-button { padding: 7px 10px; }
   .online-panel { padding: 17px; }
+  .battle-panel { padding: 17px; }
   .lobby-actions, .room-actions { align-items: stretch; flex-direction: column; }
   .duel-agents { grid-template-columns: 1fr; }
   .duel-agents > b { font-size: 15px; }
   .recap-versus, .final-score { grid-template-columns: 1fr; }
   .recap-versus > b, .final-score > b { font-size: 12px; }
   .final-round { grid-template-columns: 43px 1fr 1fr 45px; font-size: 8px; }
+  .battle-recap-stats { grid-template-columns: 1fr; }
+  .battle-scoreboard { gap: 4px; }
+  .battle-scoreboard strong { font-size: 22px; }
   footer { padding: 0 15px; }
   footer span:nth-child(2) { display: none; }
 }

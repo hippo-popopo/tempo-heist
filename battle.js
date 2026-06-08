@@ -115,6 +115,37 @@ function battleStageError(player, stage = currentBattleStage()) {
   return battleStageAnswers(player, stage).reduce((total, answer) => total + (answer?.error ?? 999), 0);
 }
 
+function battleStageProgress(player, stage = currentBattleStage()) {
+  const answers = battleStageAnswers(player, stage).filter(Boolean);
+  return {
+    answered: answers.length,
+    error: answers.reduce((total, answer) => total + answer.error, 0)
+  };
+}
+
+function battleLiveRankings() {
+  return activeBattlePlayers().map(([id, player]) => ({
+    id,
+    name: player.name,
+    ...battleStageProgress(player)
+  })).sort((a, b) => a.error - b.error || b.answered - a.answered || a.name.localeCompare(b.name));
+}
+
+function renderBattleSpectatorBoard(answerKey) {
+  const rankings = battleLiveRankings();
+  const leaderError = rankings[0]?.error || 0;
+  if (!rankings.length) return "No active agents remain.";
+  return `
+    <strong>SPECTATOR LIVE BOARD</strong>
+    <span>${rankings.filter(entry => battleRoomData.players?.[entry.id]?.answers?.[answerKey]).length} / ${rankings.length} active agents locked this round.</span>
+    <div class="battle-ranking spectator-ranking">
+      ${rankings.slice(0, 12).map((entry, index) => {
+        const gap = entry.error - leaderError;
+        return `<div><b>#${String(index + 1).padStart(2, "0")}</b><span>${escapeHtml(entry.name)}</span><small>${formatSeconds(entry.error)} S · ${entry.answered}/5</small><em>+${formatSeconds(gap)} S</em></div>`;
+      }).join("")}
+    </div>`;
+}
+
 function showBattleView(view) {
   battleEntry.classList.toggle("hidden", view !== "entry");
   battleLobby.classList.toggle("hidden", view !== "lobby");
@@ -175,11 +206,11 @@ function renderBattleArena() {
   if (player?.eliminated) {
     battleLocalState = "spectating";
     battleStatusLabel.textContent = "SPECTATOR MODE";
-    battleConsoleCopy.textContent = `${answeredCount} / ${active.length} active agents have answered.`;
+    battleConsoleCopy.textContent = "You are eliminated, but the live board follows every surviving agent.";
     renderBattleHidden();
     setBattleButton("ELIMINATED", "×", true);
     battleWaitingResult.classList.remove("hidden");
-    battleWaitingResult.innerHTML = "You are out of the battle, but you can watch the remaining agents.";
+    battleWaitingResult.innerHTML = renderBattleSpectatorBoard(answerKey);
     return;
   }
 
@@ -405,7 +436,7 @@ async function resolveBattleRound() {
     name: player.name,
     error: battleStageError(player)
   })).sort((a, b) => a.error - b.error);
-  const eliminateCount = ranked.length <= 1 ? 0 : Math.min(ranked.length - 1, Math.max(1, Math.floor(ranked.length * (battleRoomData.eliminationRate || .3))));
+  const eliminateCount = ranked.length <= 1 ? 0 : Math.min(ranked.length - 1, Math.max(1, Math.ceil(ranked.length * (battleRoomData.eliminationRate || .3))));
   const cutoff = ranked.length - eliminateCount;
   const rankings = ranked.map((entry, index) => ({ ...entry, rank: index + 1, eliminated: index >= cutoff }));
   const playerUpdates = {};

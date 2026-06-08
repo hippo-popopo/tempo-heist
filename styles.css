@@ -298,6 +298,8 @@ h1 em { color: var(--gold-bright); font-style: normal; }
 .battle-ranking div.eliminated { opacity: .54; border-color: rgba(239,96,77,.2); }
 .battle-ranking em { color: var(--gold-bright); font-size: 8px; font-style: normal; text-align: right; }
 .battle-ranking div.eliminated em { color: var(--red); }
+.spectator-ranking { max-height: 165px; margin-bottom: 0; }
+.spectator-ranking div { grid-template-columns: 42px 1fr 90px 52px; }
 .battle-winner { display: grid; justify-items: center; gap: 5px; margin: 16px 0; padding: 18px; border: 1px solid rgba(240,207,135,.5); background: rgba(38,29,16,.3); }
 .battle-winner strong { color: var(--gold-bright); font-family: var(--font-display); font-size: 36px; letter-spacing: 1px; }
 
